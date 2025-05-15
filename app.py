@@ -157,8 +157,8 @@ with st.sidebar:
             with login_col2:
                 if st.button("Sign in with Google"):
     auth_url = auth_utils.get_google_auth_url()
-    st.markdown(f"[Click here to sign in with Google]({auth_url})", unsafe_allow_html=True)
-                  
+    st.markdown(f"[Click here to sign in with Google]({auth_url})",
+                unsafe_allow_html=True)
         
         # Registration form
         with register_tab:
