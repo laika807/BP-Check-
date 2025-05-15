@@ -21,7 +21,29 @@ import sms_utils
 st.set_page_config(page_title="Blood Pressure Monitor",
                    page_icon="❤️",
                    layout="wide")
-
+# Put the callback handler code right here :
+query_params = st.experimental_get_query_params()
+if "code" in query_params:
+    result = auth_utils.process_google_callback(query_params["code"][0])
+    if result["success"]:
+        user_info = result["user_info"]
+        ip = auth_utils.get_client_ip()
+        ua = auth_utils.get_user_agent()
+        login_result = auth_utils.login_or_register_with_google(user_info, ip, ua)
+        if login_result["success"]:
+            st.session_state.authenticated = True
+            st.session_state.user_id = login_result["user_id"]
+            st.session_state.username = login_result["username"]
+            st.session_state.email = user_info.get("email")
+            st.session_state.login_method = "google"
+            st.session_state.auth_token = login_result["session_token"]
+            st.success("Logged in with Google!")
+            st.experimental_rerun()
+        else:
+            st.error(login_result["message"])
+    else:
+        st.error(result["message"])
+      
 # Initialize session state variables for authentication
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -134,13 +156,9 @@ with st.sidebar:
             
             with login_col2:
                 if st.button("Sign in with Google"):
-                    st.info("Google sign-in requires API keys. In a production app, this would redirect to Google OAuth.")
-                    st.session_state.temp_user_data = {
-                        "username": "google_user",
-                        "email": "google_user@example.com",
-                        "auth_method": "google"
-                    }
-                    st.session_state.current_tab = "google_info"
+    auth_url = auth_utils.get_google_auth_url()
+    st.markdown(f"[Click here to sign in with Google]({auth_url})", unsafe_allow_html=True)
+                  
         
         # Registration form
         with register_tab:
